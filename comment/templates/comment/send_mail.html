@@ -1,0 +1,10 @@
+<!-- 将富文本自带的HTML格式消除，非常重要 -->
+{{ text|safe }}
+<a href="{{ url }}">点击查看</a>
+
+<!-- 第二种方法,将文本中的html进行显示 -->
+<!-- {% autoescape off %}
+		{{ text }}
+		<a href="{{ url }}">点击查看</a>
+
+{% endautoescape %} -->

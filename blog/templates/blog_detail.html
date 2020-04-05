@@ -1,0 +1,330 @@
+<!-- 引用模板文件 -->
+{% extends 'base.html' %}
+{% block title %}
+	{{blog.title}}
+{% endblock %}
+<!-- 加载静态文件 -->
+{% load staticfiles %}
+
+<!-- 加载模板便签 -->
+{% load comment_tags %}
+{% load likes_tags %}
+
+{% block header_style%}
+	<!-- 需要重启本地服务才会生效，注意 -->
+	<link rel="stylesheet" type="text/css" href="{% static 'blog/blog.css'%}">
+	<script type="text/javascript" src="{% static "ckeditor/ckeditor-init.js" %}"></script>
+	<script type="text/javascript" src="{% static "ckeditor/ckeditor/ckeditor.js" %}"></script>
+{% endblock%}
+{% block nav_blog_active%}active{% endblock %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<!-- 向左偏移1个单位，全部单位为12 -->
+			<div class="col-xs-10 col-xs-offset-1">
+				<h3>{{ blog.title }}</h3>
+				<ul class="blog-info-description">
+					<li>作者：{{blog.author}}</li>
+					<li>发表日期：{{ blog.create_time|date:"Y-m-d H:i:s" }}</li>
+					<li>分类：
+						<a href="{% url 'blogs_with_type' blog.blog_type.pk %}">
+							{{blog.blog_type}}
+						</a>
+
+					</li>
+					<li>阅读（{{ blog.get_read_num }}）</li>
+					<li>评论数（{% get_comment_count blog %}）</li>
+
+				</ul>
+
+				<!-- 将文本的html标签编译 -->
+				<div class="blog-content">{{ blog.content|safe }}</div>
+				<!-- 将自己本身传递过去 -->
+				<div class="like" onclick="likeChange(this,'{% get_content_type blog %}',{{ blog.pk }})" >
+					<span class="glyphicon glyphicon-thumbs-up {% get_like_status blog %}"></span>
+					<span class="liked-num">{% get_like_count blog%}</span>
+					<span>喜欢</span>
+				</div>
+				<div class="blog-more">
+					<p>上一篇：
+						{% if previous_blog %}
+							<a href="{% url 'blog_detail' previous_blog.pk %}">{{ previous_blog.title }}</a>
+						{% else %}
+							没有了
+						{% endif %}
+
+						
+
+					</p>
+
+					<p>下一篇：
+						{% if next_blog %}
+							<a href="{% url 'blog_detail' next_blog.pk %}">{{ next_blog.title }}</a>
+						{% else %}
+							没有了
+						{% endif %}
+
+
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-10 col-xs-offset-1">
+				<div class="comment-area">
+					<h3 class="comment-area-title">提交评论</h3>
+					<!-- 判断用户是否登录，登录返回true，未登录返回false -->
+					{% if user.is_authenticated %}
+					<!-- 父级设置浮动隐藏 -->
+						<form id="comment_form" action="{% url 'update_comment' %}" method="POST" style="overflow: hidden;">
+							<!-- csrf令牌的意思，防止攻击，否则拒绝访问 -->
+							{% csrf_token %}
+							<label for="comment-text">{{ user.username }},欢迎评论</label>
+							<div id="reply_content_container" style="display: none;">
+								<p id="reply_title">回复：</p>
+								<div id="reply_content"></div>
+							</div>
+							<!-- 将模板便签返回的值，取一个别名就可以使用了 -->
+							{% get_comment_form blog as comment_form %}
+
+							<!-- 将form对象按字段显示 -->
+							{% for field in comment_form %}
+								{{ field }}
+							{% endfor %}
+							<span id="comment_error" class="text-danger pull-lef
+							t"></span>
+							<!-- 向右浮动，需要在父级的样式进行设置 -->
+							<input type="submit" value="提交" class="btn btn-primary" style="float: right;">
+						</form>
+
+					{% else %}
+						您尚未登录，请登录以后再发表评论~
+						<!-- 将当前的相对路径，以带参的方式，带到下一个地址 -->
+						<a class='btn btn-primary' href="{% url 'login' %}?from={{ request.get_full_path }}">登录</a>或者<a class='btn btn-danger' href="{% url 'register' %}?from={{ request.get_full_path }}">注册</a>
+						
+					{% endif %}
+
+				</div>
+				<div class="comment-area">
+					<h3 class="comment-area-title">评论列表</h3>
+
+					<div id="comment_list">
+						{% get_comment_list blog as comments %}
+						{% for comment in comments %}
+							<div id="root_{{ comment.pk }}" class="comment">
+								<span>{{ comment.user.get_nickname_or_username }}</span>
+								<!-- date:"Y-m-d H:i:s"时间格式 -->
+								<span>({{ comment.comment_time|date:"Y-m-d H:i:s" }}):</span>
+								<div id="comment_{{ comment.pk }}">
+									<span>{{ comment.text|safe }}</span>
+								</div>
+								<div class="like" onclick="likeChange(this,'{% get_content_type comment %}',{{ comment.pk }})" >
+									<span class="glyphicon glyphicon-thumbs-up {% get_like_status comment %}"></span>
+									<span class="liked-num">{% get_like_count comment %}</span>
+								</div>
+								
+								<a href="javascript:reply({{ comment.pk }})">回 复</a>
+
+								{% for reply in comment.root_comment.all %}
+									<div class="reply">
+										<span>{{ reply.user.get_nickname_or_username }} </span>
+										<span>({{ reply.comment_time|date:"Y-m-d H:i:s" }})</span>
+										<span> 回复</span>
+										<span>{{ reply.reply_to.get_nickname_or_username }}:</span>
+										<div id="comment_{{ reply.pk }}">
+											<span>{{ reply.text|safe }}</span>
+										</div>
+										<div class="like" onclick="likeChange(this,'{% get_content_type reply %}',{{ reply.pk }})" >
+											<span class="glyphicon glyphicon-thumbs-up {% get_like_status reply %}"></span>
+											<span class="liked-num">{% get_like_count reply %}</span>
+										</div>
+										<a href="javascript:reply({{ reply.pk }})" >回 复</a>
+									</div>
+								{% endfor %}
+							</div>
+						{% empty %}
+							<span id="comment_non" >暂无评论</span>
+						{% endfor %}
+					</div>
+
+					
+				</div>
+			</div>
+		</div>
+
+		
+	</div>
+	
+{% endblock %}
+
+{% block script_extends %}
+	<script type="text/javascript">
+		// 1、题外话，有关概念理解：String.prototype 属性表示 String原型对象。所有 String 的实例都继承自 String.prototype. 任何String.prototype上的改变都会影响到所有的 String 实例。
+		String.prototype.format=function(){
+			var str=this;
+			for (var i = 0; i < arguments.length; i++) {
+				var str=str.replace(new RegExp('\\{'+i+'\\}','g'),arguments[i]);
+
+			}
+			return str;
+		};
+
+		$("#comment_form").submit(function(){
+
+
+			// 清空错误的信息，否则第二次也会有错误的信息显示
+			$('#comment_error').text('');
+			// 先判断评论是否为空，节约资源
+			if(CKEDITOR.instances['id_text'].document.getBody().getText().trim()==''){
+				// #显示评论错误信息
+				$('#comment_error').text('评论不能为空！');
+				// 不再往下执行
+				return false
+			};
+			// 异步提交前更新数据到textarea,因为编辑器的原因，输入的文字没有直接赋给textarea对象，需要更新，否则第一次提交评论的时候，评论内容是为空。
+			CKEDITOR.instances['id_text'].updateElement()
+
+			// 异步提交,$(this).serialize()序列化表单，如“a=1&b=2&c=3&text=评论，成功时候调用success方法，将提交url返回的json数据返回到success方法的data中，处理链接的方法必须返回一个json对象
+			$.ajax({
+				url:"{% url 'update_comment' %}",
+				type:'POST',
+				data:$(this).serialize(),
+				success:function(data){
+					console.log(data);
+					// 判断返回的状态码
+					if(data['status']=="SUCCESS"){
+						console.log(data['comment_time']);
+					
+						if($('#reply_comment_id').val()=='0') {
+							// 插入评论
+							// var comment_html='<div id="root_'+data['pk']+'" class="comment"> <span>' + data['username']+ '</span> <span>('+ data['comment_time'] + '):</span> <div id="comment_'+data['pk']+'"> <span>'+data['text']+'</span> </div>  <a href="javascript:reply('+data['pk']+')">回复</a> </div>'
+
+							var comment_html='<div id="root_{0}" class="comment">'+
+								'<span>{1}</span>'+
+								'<span>({2}):</span>'+
+								'<div id="comment_{0}">'+
+									'<span>{3}</span>'+
+								'</div>'+
+								'<div class="like" onclick="likeChange(this,\'{4}\',{0})" >'+
+									'<span class="glyphicon glyphicon-thumbs-up "></span> '+
+									'<span class="liked-num">0</span>'+
+								'</div>'+
+								'<a href="javascript:reply({0})">回 复</a>'+
+								'</div>'
+							comment_html=comment_html.format(data['pk'],data['username'],data['comment_time'],data['text'],data['content_type'])
+							$("#comment_list").prepend(comment_html);
+							$('#comment_error').text('评论成功');
+						}else{
+							// 插入回复
+							// var reply_html=	'<div class="reply"><span>'+ data['username']+' </span><span>('+data['comment_time']+')</span><span>回复</span><span>'+data['reply_to']+':</span><div id="comment_'+data['pk']+'"><span>'+data['text']+'</span>	</div><a href="javascript:reply('+data['pk']+')" >回复</a></div>'
+
+							var reply_html='<div class="reply">'+
+										'<span>{1} </span>'+
+										'<span>({2})</span>'+
+										'<span> 回 复 </span>'+
+										'<span>{3}:</span>'+
+										'<div id="comment_{0}">'+
+											'<span>{4}</span>'+
+										'</div>'+
+										'<div class="like" onclick="likeChange(this,\'{5}\',{0})" >'+
+											'<span class="glyphicon glyphicon-thumbs-up "></span> '+
+											'<span class="liked-num">0</span>'+
+										'</div>'+
+										'<a href="javascript:reply({0})" >回 复</a>'+
+									'</div>'
+							reply_html=reply_html.format(data['pk'],data['username'],data['comment_time'],data['reply_to'],data['text'],data['content_type'])
+							// 在自身最后添加，不是在以外部分
+							$("#root_"+data['root_pk']).append(reply_html);
+							$('#comment_error').text('回复成功');
+						}
+
+						// 数据插入完成以后，清空编辑框的内容
+						CKEDITOR.instances['id_text'].setData('')
+						// 将暂无评论删除
+						$('#comment_non').text('');
+						// 隐藏回复框
+						$('#reply_content_container').hide();
+						// 将回复评论的id归0
+						$('#reply_comment_id').val('0');
+						
+					}else{
+						
+						// #显示评论错误信息
+						$('#comment_error').text(data['message']);
+					};
+				},
+				error:function(xhr){
+					console.log(xhr);
+				},
+
+
+			});
+			return false;
+		});
+
+
+		// #点击回复的时候调用的方法
+		function reply(reply_comment_id){
+
+			// 清空错误的信息，否则第二次也会有错误的信息显示
+			$('#comment_error').text('');
+			// 先判断评论是否为空，节约资源
+			// 设置回复的评论id
+			$('#reply_comment_id').val(reply_comment_id);
+			var html=$('#comment_'+reply_comment_id).html();
+			$('#reply_content').html(html);
+			$('#reply_content_container').show();
+
+			// 回滚到编辑框
+			$('html').animate({scrollTop:$('#comment_form').offset().top-60},300,function(){
+				// 编辑框获得焦点
+				CKEDITOR.instances['id_text'].focus()
+			})
+		};
+
+		function likeChange(obj,content_type,object_id){
+			// 判断传递过来的对象，有没有active的元素，如果有返回false，没有返回true
+			var is_like=obj.getElementsByClassName('active').length==0
+			$.ajax({
+				url:"{% url 'like_change' %}",
+				type:'GET',
+				data:{
+					content_type:content_type,
+					object_id:object_id,
+					is_like:is_like,
+				},
+				cache:false,
+				success:function(data){
+					console.log(data)
+					if(data['status']=='SUCCESS'){
+						// 更新点赞状态
+						var element=$(obj.getElementsByClassName('glyphicon'));
+						if (is_like) {
+							element.addClass('active')
+						}else{
+							element.removeClass('active')
+						}
+						// 更新点赞数量
+						var liked_num=$(obj.getElementsByClassName('liked-num'));
+						liked_num.text(data['liked_num'])
+					}else{
+						if (data['code']==400) {
+							$('#login_modal').modal('show')
+						}else{
+							alert(data['message'])
+						}
+						
+					}
+				},
+				error:function(xhr){
+					console.log(xhr)
+				},
+			});
+
+		};
+		
+
+	</script>
+
+{% endblock %}
