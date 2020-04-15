@@ -122,7 +122,7 @@ STATIC_URL = '/static/'
 #收集静态文件，主要用于服务器的
 STATIC_ROOT=os.path.join(BASE_DIR,'static_collected')
 
-#测试
+#git测试
 
 
 STATICFILES_DIRS=[
