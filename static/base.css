@@ -2,3 +2,33 @@
 	margin: 0;
 	padding: 0;
 }
+
+/*需要覆盖掉原来的bootstrap的设置 */
+.unread-count {
+	margin-left: 0.3em;
+	background-color: red!important;
+}
+
+.search-form button[type='submit'] {
+	background: none;
+    margin-left: -3em;
+    border: none;
+    color: #aaa;
+}
+
+div.footer{
+	margin-top: 3em;
+	background-color: #eee;
+	color: #555;
+
+}
+
+div.website-info{
+	text-align: center;
+	padding-top: 2em;
+	padding-bottom: 1em;
+}
+
+div.website-info p{
+	margin-bottom: 0;
+}

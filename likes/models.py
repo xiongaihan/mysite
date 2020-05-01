@@ -14,6 +14,12 @@ class LikeCount(models.Model):
 
 	liked_num=models.IntegerField(default=0)
 
+	class Meta:
+		#设置app的名称，会在显示的显示s复数
+		verbose_name="点赞数量"
+		#复数的显示和单数一样
+		verbose_name_plural=verbose_name
+
 
 
 
@@ -29,3 +35,10 @@ class LikeRecord(models.Model):
 	# 需要设置related_name='root_comment'参数，如果有相同的外键，必须设置，否则将会报错。on_delete=models.CASCADE串联关系，当评论的用户被删除的时候，用户评论的内容也会被删除，可以保证数据的完整性
 	user=models.ForeignKey(User,on_delete=models.CASCADE,verbose_name='点赞用户')
 	liked_time=models.DateTimeField(auto_now_add=True)
+
+
+	class Meta:
+		#设置app的名称，会在显示的显示s复数
+		verbose_name="点赞记录"
+		#复数的显示和单数一样
+		verbose_name_plural=verbose_name

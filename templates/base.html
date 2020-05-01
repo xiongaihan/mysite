@@ -1,4 +1,6 @@
 {% load staticfiles %}
+<!-- 加载第三方库notifications的模板标签文件 -->
+{% load notifications_tags %}
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -13,6 +15,8 @@
 	<!-- 引用jquery的js -->
 	<script type="text/javascript" src="{% static 'jquery.min.js'%}"></script>
 	<script type="text/javascript" src="{% static 'bootstrap-3.3.7-dist/js/bootstrap.min.js'%}"></script>
+	<!-- 引入第三方库的js代码 -->
+	<script type="text/javascript" src="{% static 'notifications/notify.js' %}" ></script>
 	
 	{% block header_style%}{% endblock%}
 	
@@ -42,9 +46,10 @@
 
 				    {% else %}
 			        <li class="dropdown">
+			        	{% notifications_unread as unread_count %}
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 							{% if user.has_nickname %}
-								{{ user.username }} ({{ user.get_nickname }})
+								{{ user.username }} ({{ user.get_nickname }})<span class="badge unread-count">{% if unread_count > 0 %}{{ unread_count }}{% endif %}</span>
 							{% else %}
 								{{ user.username }}
 							{% endif %}
@@ -53,6 +58,7 @@
 							{% block back_home %}<li><a href="{% url 'user_info' %}?from={{ request.get_full_path }}" >个人信息</a></li>{% endblock %}
 							{% block back %}<li><a href="{% url 'logout' %}?from={{ request.get_full_path }}">退出登录</a></li>{% endblock %}
 							<li><a href="{% url 'change_password' %}">修改密码</a></li>
+							<li><a href="{% url 'my_notifications' %}">消息中心<span class="badge unread-count">{% if unread_count > 0 %}{{ unread_count }}{% endif %}</span></a></li>
 							{% if user.is_staff or user.is_superuser %}
 								<li><a href="{% url 'admin:index' %}">后台管理</a></li>
 							{% endif %}
@@ -62,6 +68,15 @@
 					</li>
 
 					{% endif %}
+					<!-- 搜索框 -->
+					<form class="navbar-form search-form navbar-left" role="search" action="{% url 'search' %}">
+						<div class="form-group">
+							<input type="text" class="form-control" name="wd" placeholder="搜索">
+						</div>
+						<button type="submit" class="btn btn-default">
+							<span class="glyphicon glyphicon-search"></span>
+						</button>
+					</form>
 				</ul>
 
 			</div>
@@ -73,6 +88,14 @@
 	
 	<!-- 模板嵌套，block是关键字，后面跟的是模板的名称 -->
 	{% block content %}{% endblock %}
+
+	<!-- 备案号信息footer -->
+	<div class="footer">
+		<div class="website-info">
+			<p>鄂ICP备20006143号-1 Copyright©2020 xiongaihan.top</p>
+			<p>意见反馈或者联系我（948709909@qq.com）</p>
+		</div>
+	</div>
 
 	<!-- Modal -->
 	<div class="modal fade" id="login_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -141,7 +164,18 @@
 
 
 		});
+
+		function my_special_notification_callback(data) {
+			if (data['unread_count']>0) {
+				$('.unread-count').text(data['unread_count'])
+			}else{
+				$('.unread-count').text('')
+			}
+        	console.log(data);
+		}
 	</script>
+	<!-- 通过标签模板文件里面的方法，加载js,回调自定义的方法 -->
+	{% register_notify_callbacks callbacks='my_special_notification_callback' %}
 
 </body>
 </html>

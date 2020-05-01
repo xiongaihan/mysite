@@ -1,0 +1,13 @@
+ul{
+	list-style:none;
+}
+li.read{
+	color: #bbb;
+}
+/*将a标签的样式修改*/
+li.read a{
+	color: #bbb;
+}
+.notifications{
+	margin-top: 1em;
+}

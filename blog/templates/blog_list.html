@@ -33,8 +33,8 @@
 								评论数（{% get_comment_count blog %}）
 								点赞数（{% get_like_count blog %}）
 							</p>
-							<!-- 只显示30个文字，多余的部分不显示,剪切文本中掉html标签 -->
-							<p>{{ blog.content|striptags|truncatechars_html:120 }}</p>
+							<!-- 只显示30个文字，多余的部分不显示,剪切文本中掉html标签 safe将html标签显示为文本-->
+							<p>{{ blog.content|striptags|safe|truncatechars_html:120 }}</p>
 						</div>
 						<!-- 判断为空的时候显示的内容 -->
 					{% empty%}

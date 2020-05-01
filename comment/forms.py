@@ -39,7 +39,7 @@ class CommentForm(forms.Form):
 		object_id=self.cleaned_data['object_id']
 
 		try:
-			#获取模型的所有对象信息
+			#获取模型的所有对象信息，content_type是字符类型
 			model_class=ContentType.objects.get(model=content_type).model_class()
 			model_obj=model_class.objects.get(pk=object_id)
 			# 将获取的对象传入到cleaned_data数据当中

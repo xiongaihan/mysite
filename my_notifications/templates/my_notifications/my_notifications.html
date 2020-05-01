@@ -1,0 +1,41 @@
+<!-- 引用模板文件 -->
+{% extends 'base.html' %}
+<!-- 加载静态的文件 ，注意格式-->
+{% load static %}
+
+{% block title %}
+	星星博客|我的消息
+{% endblock %}
+
+{% block nav_home_active%}active{% endblock %}
+
+{% block header_style%}
+<!-- 连接静态文件的css -->
+<!-- 注意格式 -->
+	<link rel="stylesheet" type="text/css" href="{% static 'my_notifications/my_notifications.css' %}">
+
+{% endblock%}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-10 col-xs-offset-1">
+				<!--第三方库的url为了避免重复，一般设置有命名的空间namespace，引用的时候，前面加上命名空间的名称'notifications:mark_all_as_read'  -->
+				<!-- next={% url 'my_notifications' %}删除以后的url -->
+				<a class='btn btn-primary' href="{% url 'notifications:mark_all_as_read' %}?next={% url 'my_notifications' %}">全部标记成已读</a>
+				<a class='btn btn-danger' href="{% url 'delete_my_read_notifications' %}">删除已读消息</a>
+
+				<ul class="notifications">
+					<!-- 如果模型有外键，可以通过外键对象反向关联出对象，例如blog对象有user外键，则可以用一个用户的实例来获得这个用户想关联的blog，默认的写法user.blog_set.all，也可以在创建model的时候自定义这个关键词related_name='自定义' user.notifications.all可以得到和用户相关的notification对象，因为模型和user有外键关联-->
+					{% for notification in user.notifications.all %}
+					<!-- 添加一个已读的标签read -->
+					<li class="{% if not notification.unread %}read{% endif %}">[{{ notification.timesince }}之前]<a href="{% url 'my_notification' notification.pk %}">{{ notification.verb }}</a></li>
+					{% empty %}
+					<li>暂无消息</li>
+					{% endfor %}
+					
+				</ul>
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -19,6 +19,12 @@ class BlogType(models.Model):
 	def __str__(self):
 		return self.type_name
 
+	class Meta:
+		#设置app的名称，会在显示的显示s复数
+		verbose_name="博客类型"
+		#复数的显示和单数一样
+		verbose_name_plural=verbose_name
+
 
 #继承了计数应用的类，可以使用父类的方法
 class Blog(models.Model,ReadNumExpandMethod):
@@ -42,7 +48,11 @@ class Blog(models.Model,ReadNumExpandMethod):
 	def get_url(self):
 		return reverse('blog_detail',kwargs={'blog_pk':self.pk})
 		
+	#返回文章的作者
+	def get_user(self):
+		return self.author
 
+		
 	#此方法使得显示博客对象的时候，只是显示博客的标题
 
 	def __str__(self):
@@ -51,4 +61,8 @@ class Blog(models.Model,ReadNumExpandMethod):
 	#根据文章的更新时间进行倒序排列
 	class Meta:
 		ordering=['-last_uptadaed_time']
+		#设置app的名称，会在显示的显示s复数
+		verbose_name="博客"
+		#复数的显示和单数一样
+		verbose_name_plural=verbose_name
 

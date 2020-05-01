@@ -18,6 +18,12 @@ class ReadNum(models.Model):
 	content_object = GenericForeignKey('content_type', 'object_id')
 
 
+	class Meta:
+		#设置app的名称，会在显示的显示s复数
+		verbose_name="阅读数量"
+		#复数的显示和单数一样
+		verbose_name_plural=verbose_name
+
 #将计数的内容放在一起，此方法为计数拓展的方法
 class ReadNumExpandMethod(object):
 
@@ -45,6 +51,11 @@ class ReadDetail(models.Model):
     #外联一个实际的对象，通过获取的模型类和实际的对象id
 	content_object = GenericForeignKey('content_type', 'object_id')
 
+	class Meta:
+		#设置app的名称，会在显示的显示s复数
+		verbose_name="阅读详情"
+		#复数的显示和单数一样
+		verbose_name_plural=verbose_name
 
 
 		

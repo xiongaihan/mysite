@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import home
+from .views import home,search
 
 urlpatterns = [
 	path('',home,name='home'),
@@ -27,7 +27,9 @@ urlpatterns = [
     path('comment/',include('comment.urls')),
     path('likes/',include('likes.urls')),
     path('user/',include('user.urls')),
-    
+    path('my_notification/',include('my_notifications.urls')),
+    path('notifications/', include('notifications.urls', namespace='notifications')),
+    path('search/', search , name='search'),
 ]
 
 #将本地的media文件路径放在路径中，这样可以找到路径，方便第三方模块ckeditor找到。

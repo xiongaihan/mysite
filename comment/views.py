@@ -4,6 +4,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 #导入json对象
 from django.http import JsonResponse
+#发送信息模块
+from notifications.signals import notify
 from .forms import CommentForm
 import datetime
 
@@ -68,12 +70,14 @@ def update_comment(request):
 			comment.reply_to=parent.user
 		#保存数据到数据库
 		comment.save()
-		# 发送邮件
-		comment.send_mail()
+
+
+		
+		
 
 		# 返回数据
 		data['status']='SUCCESS'
-		# 动态属性是一个方法，在前端模板页面可以不加（）
+		# 动态属性是一个方法，在前端模板页面可以不加（）号
 		data['username']=comment.user.get_nickname_or_username()
 		#将当前的时间传入，否则将会显示UTC的时间，系统默认的写入时间是UTC的时间
 		now = datetime.datetime.now()

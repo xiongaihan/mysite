@@ -11,7 +11,11 @@ class Profile(models.Model):
 	def __str__(self):
 		return '<Profile:%s for %s>'%(self.nickname,self.user.username)
 
-
+	class Meta:
+		#设置app的名称，会在显示的显示s复数
+		verbose_name="个人资料"
+		#复数的显示和单数一样
+		verbose_name_plural=verbose_name
 
 def get_nickname(self):
 
