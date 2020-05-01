@@ -19,6 +19,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 
 
+
+
+
 # Application definition
 #可以注册第三方的模型‘ckeditor’
 INSTALLED_APPS = [
