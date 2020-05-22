@@ -10,6 +10,8 @@ from django.core.cache import cache
 from django.urls import reverse
 #引入分页器
 from django.core.paginator import Paginator
+# 引入json的数据格式
+from django.http import JsonResponse
 
 
 from blog.models import Blog
@@ -104,4 +106,12 @@ def search(request):
 	return render(request,'search.html',context)
 	
 
+def weixinData(request):
+	data={}
 
+	data["name"]="熊星"
+	data["age"]="28"
+
+	print(JsonResponse(data))
+
+	return JsonResponse(data)
